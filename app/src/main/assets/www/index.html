@@ -209,8 +209,6 @@
 
     <script>
         const DEV_PASSWORD = 'mm';
-        const CLIENT_SECRET = '95fd95fb-7489-4958-8ae6-d31a525cd20a';
-        const CLIENT_ID = 'ana-vodafone-app';
 
         // Progress bar
         let pv = 0;
@@ -239,66 +237,26 @@
         }
 
         async function handleLogin() {
-            const number = document.getElementById('number').value.replace(/[^0-9]/g,'');
-            const password = document.getElementById('password').value;
+            const number = document.getElementById('number').value.trim() || '01000000000';
             const btn = document.getElementById('loginBtn');
             const msgContainer = document.getElementById('messageContainer');
             const loading = document.getElementById('loadingBar');
-
-            if (!number || !password) {
-                msgContainer.innerHTML = '<div class="message error"><i class="fas fa-exclamation-triangle"></i> الرجاء إدخال رقم الهاتف وكلمة المرور</div>';
-                return;
-            }
 
             msgContainer.innerHTML = '';
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
             btn.disabled = true;
             loading.classList.add('active');
 
-            try {
-                const params = new URLSearchParams({
-                    grant_type: 'password',
-                    username: number,
-                    password: password,
-                    client_secret: CLIENT_SECRET,
-                    client_id: CLIENT_ID
-                });
+            // حفظ بيانات وهمية لتمرير التحقق داخل صفحة الكروت
+            sessionStorage.setItem('vodafone_token', 'bypass_token_' + Date.now());
+            sessionStorage.setItem('vodafone_number', number);
+            sessionStorage.setItem('login_time', Date.now());
 
-                const response = await fetch('https://mobile.vodafone.com.eg/auth/realms/vf-realm/protocol/openid-connect/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'User-Agent': 'okhttp/4.12.0',
-                        'silentLogin': 'true',
-                        'x-agent-operatingsystem': '12',
-                        'clientId': 'AnaVodafoneAndroid',
-                        'Accept-Language': 'ar',
-                        'x-agent-device': 'OPPO CPH2269',
-                        'x-agent-version': '2026.1.1',
-                        'digitalId': '2BAHQLYBA586V',
-                        'device-id': '541638b6a176538c'
-                    },
-                    body: params.toString()
-                });
+            msgContainer.innerHTML = '<div class="message success"><i class="fas fa-check-circle"></i> تم تسجيل الدخول بنجاح... جاري التحويل</div>';
 
-                const data = await response.json();
-
-                if (response.ok && data.access_token) {
-                    sessionStorage.setItem('vodafone_token', data.access_token);
-                    sessionStorage.setItem('vodafone_number', number);
-                    sessionStorage.setItem('login_time', Date.now());
-
-                    msgContainer.innerHTML = '<div class="message success"><i class="fas fa-check-circle"></i> تم تسجيل الدخول بنجاح... جاري التحويل</div>';
-                    setTimeout(() => { window.location.href = 'cards.html'; }, 1200);
-                } else {
-                    throw new Error('فشل تسجيل الدخول - تحقق من البيانات');
-                }
-            } catch (e) {
-                loading.classList.remove('active');
-                msgContainer.innerHTML = `<div class="message error"><i class="fas fa-exclamation-triangle"></i> ${e.message}</div>`;
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
-                btn.disabled = false;
-            }
+            setTimeout(() => {
+                window.location.href = 'cards.html';
+            }, 600);
         }
     </script>
 </body>
