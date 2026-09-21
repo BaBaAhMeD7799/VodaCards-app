@@ -18,9 +18,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Generate Gradle Wrapper
+    - name: Restore Gradle Wrapper JAR
       run: |
-        gradle wrapper
+        mkdir -p /tmp/wrap
+        touch /tmp/wrap/settings.gradle
+        (cd /tmp/wrap && gradle wrapper)
+        mkdir -p gradle/wrapper
+        cp /tmp/wrap/gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar
         chmod +x gradlew
 
     - name: Build with Gradle
